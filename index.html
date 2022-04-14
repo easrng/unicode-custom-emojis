@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>fun with unicode</title>
+  <style>
+.emoji {
+  width: 1.6ch;
+  height: 1.6ch;
+  margin-bottom: -0.125ch;
+  object-fit: contain;
+}
+body,html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
+body, #encode, #decode, #pickwrap {
+  display: flex;
+  flex-direction: column;
+}
+#encode, #decode {
+  flex-grow: 1;
+}
+#encode:not(:target), #encode:target+#decode {
+  display: none;
+  display: none;
+}
+textarea, #out, #pickwrap {
+  flex-grow: 1;
+  width: 100%;
+  flex-basis: 0;
+  padding: 0.5rem;
+}
+#pickwrap {
+  align-items: center;
+  justify-content: center;
+}
+</style>
+<script>let chars = [
+  {
+    "cp": "E0020",
+    "title": "TAG SPACE",
+    "char": " "
+  },
+  {
+    "cp": "E0021",
+    "title": "TAG EXCLAMATION MARK",
+    "char": "!"
+  },
+  {
+    "cp": "E0022",
+    "title": "TAG QUOTATION MARK",
+    "char": "\""
+  },
+  {
+    "cp": "E0023",
+    "title": "TAG NUMBER SIGN",
+    "char": "#"
+  },
+  {
+    "cp": "E0024",
+    "title": "TAG DOLLAR SIGN",
+    "char": "$"
+  },
+  {
+    "cp": "E0025",
+    "title": "TAG PERCENT SIGN",
+    "char": "%"
+  },
+  {
+    "cp": "E0026",
+    "title": "TAG AMPERSAND",
+    "char": "&"
+  },
+  {
+    "cp": "E0027",
+    "title": "TAG APOSTROPHE",
+    "char": "'"
+  },
+  {
+    "cp": "E0028",
+    "title": "TAG LEFT PARENTHESIS",
+    "char": "("
+  },
+  {
+    "cp": "E0029",
+    "title": "TAG RIGHT PARENTHESIS",
+    "char": ")"
+  },
+  {
+    "cp": "E002A",
+    "title": "TAG ASTERISK",
+    "char": "*"
+  },
+  {
+    "cp": "E002B",
+    "title": "TAG PLUS SIGN",
+    "char": "+"
+  },
+  {
+    "cp": "E002C",
+    "title": "TAG COMMA",
+    "char": ","
+  },
+  {
+    "cp": "E002D",
+    "title": "TAG HYPHEN-MINUS",
+    "char": "-"
+  },
+  {
+    "cp": "E002E",
+    "title": "TAG FULL STOP",
+    "char": "."
+  },
+  {
+    "cp": "E002F",
+    "title": "TAG SOLIDUS",
+    "char": "/"
+  },
+  {
+    "cp": "E0030",
+    "title": "TAG DIGIT ZERO",
+    "char": "0"
+  },
+  {
+    "cp": "E0031",
+    "title": "TAG DIGIT ONE",
+    "char": "1"
+  },
+  {
+    "cp": "E0032",
+    "title": "TAG DIGIT TWO",
+    "char": "2"
+  },
+  {
+    "cp": "E0033",
+    "title": "TAG DIGIT THREE",
+    "char": "3"
+  },
+  {
+    "cp": "E0034",
+    "title": "TAG DIGIT FOUR",
+    "char": "4"
+  },
+  {
+    "cp": "E0035",
+    "title": "TAG DIGIT FIVE",
+    "char": "5"
+  },
+  {
+    "cp": "E0036",
+    "title": "TAG DIGIT SIX",
+    "char": "6"
+  },
+  {
+    "cp": "E0037",
+    "title": "TAG DIGIT SEVEN",
+    "char": "7"
+  },
+  {
+    "cp": "E0038",
+    "title": "TAG DIGIT EIGHT",
+    "char": "8"
+  },
+  {
+    "cp": "E0039",
+    "title": "TAG DIGIT NINE",
+    "char": "9"
+  },
+  {
+    "cp": "E003A",
+    "title": "TAG COLON",
+    "char": ":"
+  },
+  {
+    "cp": "E003B",
+    "title": "TAG SEMICOLON",
+    "char": ";"
+  },
+  {
+    "cp": "E003C",
+    "title": "TAG LESS-THAN SIGN",
+    "char": "<"
+  },
+  {
+    "cp": "E003D",
+    "title": "TAG EQUALS SIGN",
+    "char": "="
+  },
+  {
+    "cp": "E003E",
+    "title": "TAG GREATER-THAN SIGN",
+    "char": ">"
+  },
+  {
+    "cp": "E003F",
+    "title": "TAG QUESTION MARK",
+    "char": "?"
+  },
+  {
+    "cp": "E0040",
+    "title": "TAG COMMERCIAL AT",
+    "char": "@"
+  },
+  {
+    "cp": "E0041",
+    "title": "TAG LATIN CAPITAL LETTER A",
+    "char": "A"
+  },
+  {
+    "cp": "E0042",
+    "title": "TAG LATIN CAPITAL LETTER B",
+    "char": "B"
+  },
+  {
+    "cp": "E0043",
+    "title": "TAG LATIN CAPITAL LETTER C",
+    "char": "C"
+  },
+  {
+    "cp": "E0044",
+    "title": "TAG LATIN CAPITAL LETTER D",
+    "char": "D"
+  },
+  {
+    "cp": "E0045",
+    "title": "TAG LATIN CAPITAL LETTER E",
+    "char": "E"
+  },
+  {
+    "cp": "E0046",
+    "title": "TAG LATIN CAPITAL LETTER F",
+    "char": "F"
+  },
+  {
+    "cp": "E0047",
+    "title": "TAG LATIN CAPITAL LETTER G",
+    "char": "G"
+  },
+  {
+    "cp": "E0048",
+    "title": "TAG LATIN CAPITAL LETTER H",
+    "char": "H"
+  },
+  {
+    "cp": "E0049",
+    "title": "TAG LATIN CAPITAL LETTER I",
+    "char": "I"
+  },
+  {
+    "cp": "E004A",
+    "title": "TAG LATIN CAPITAL LETTER J",
+    "char": "J"
+  },
+  {
+    "cp": "E004B",
+    "title": "TAG LATIN CAPITAL LETTER K",
+    "char": "K"
+  },
+  {
+    "cp": "E004C",
+    "title": "TAG LATIN CAPITAL LETTER L",
+    "char": "L"
+  },
+  {
+    "cp": "E004D",
+    "title": "TAG LATIN CAPITAL LETTER M",
+    "char": "M"
+  },
+  {
+    "cp": "E004E",
+    "title": "TAG LATIN CAPITAL LETTER N",
+    "char": "N"
+  },
+  {
+    "cp": "E004F",
+    "title": "TAG LATIN CAPITAL LETTER O",
+    "char": "O"
+  },
+  {
+    "cp": "E0050",
+    "title": "TAG LATIN CAPITAL LETTER P",
+    "char": "P"
+  },
+  {
+    "cp": "E0051",
+    "title": "TAG LATIN CAPITAL LETTER Q",
+    "char": "Q"
+  },
+  {
+    "cp": "E0052",
+    "title": "TAG LATIN CAPITAL LETTER R",
+    "char": "R"
+  },
+  {
+    "cp": "E0053",
+    "title": "TAG LATIN CAPITAL LETTER S",
+    "char": "S"
+  },
+  {
+    "cp": "E0054",
+    "title": "TAG LATIN CAPITAL LETTER T",
+    "char": "T"
+  },
+  {
+    "cp": "E0055",
+    "title": "TAG LATIN CAPITAL LETTER U",
+    "char": "U"
+  },
+  {
+    "cp": "E0056",
+    "title": "TAG LATIN CAPITAL LETTER V",
+    "char": "V"
+  },
+  {
+    "cp": "E0057",
+    "title": "TAG LATIN CAPITAL LETTER W",
+    "char": "W"
+  },
+  {
+    "cp": "E0058",
+    "title": "TAG LATIN CAPITAL LETTER X",
+    "char": "X"
+  },
+  {
+    "cp": "E0059",
+    "title": "TAG LATIN CAPITAL LETTER Y",
+    "char": "Y"
+  },
+  {
+    "cp": "E005A",
+    "title": "TAG LATIN CAPITAL LETTER Z",
+    "char": "Z"
+  },
+  {
+    "cp": "E005B",
+    "title": "TAG LEFT SQUARE BRACKET",
+    "char": "["
+  },
+  {
+    "cp": "E005C",
+    "title": "TAG REVERSE SOLIDUS",
+    "char": "\\"
+  },
+  {
+    "cp": "E005D",
+    "title": "TAG RIGHT SQUARE BRACKET",
+    "char": "]"
+  },
+  {
+    "cp": "E005E",
+    "title": "TAG CIRCUMFLEX ACCENT",
+    "char": "^"
+  },
+  {
+    "cp": "E005F",
+    "title": "TAG LOW LINE",
+    "char": "_"
+  },
+  {
+    "cp": "E0060",
+    "title": "TAG GRAVE ACCENT",
+    "char": "`"
+  },
+  {
+    "cp": "E0061",
+    "title": "TAG LATIN SMALL LETTER A",
+    "char": "a"
+  },
+  {
+    "cp": "E0062",
+    "title": "TAG LATIN SMALL LETTER B",
+    "char": "b"
+  },
+  {
+    "cp": "E0063",
+    "title": "TAG LATIN SMALL LETTER C",
+    "char": "c"
+  },
+  {
+    "cp": "E0064",
+    "title": "TAG LATIN SMALL LETTER D",
+    "char": "d"
+  },
+  {
+    "cp": "E0065",
+    "title": "TAG LATIN SMALL LETTER E",
+    "char": "e"
+  },
+  {
+    "cp": "E0066",
+    "title": "TAG LATIN SMALL LETTER F",
+    "char": "f"
+  },
+  {
+    "cp": "E0067",
+    "title": "TAG LATIN SMALL LETTER G",
+    "char": "g"
+  },
+  {
+    "cp": "E0068",
+    "title": "TAG LATIN SMALL LETTER H",
+    "char": "h"
+  },
+  {
+    "cp": "E0069",
+    "title": "TAG LATIN SMALL LETTER I",
+    "char": "i"
+  },
+  {
+    "cp": "E006A",
+    "title": "TAG LATIN SMALL LETTER J",
+    "char": "j"
+  },
+  {
+    "cp": "E006B",
+    "title": "TAG LATIN SMALL LETTER K",
+    "char": "k"
+  },
+  {
+    "cp": "E006C",
+    "title": "TAG LATIN SMALL LETTER L",
+    "char": "l"
+  },
+  {
+    "cp": "E006D",
+    "title": "TAG LATIN SMALL LETTER M",
+    "char": "m"
+  },
+  {
+    "cp": "E006E",
+    "title": "TAG LATIN SMALL LETTER N",
+    "char": "n"
+  },
+  {
+    "cp": "E006F",
+    "title": "TAG LATIN SMALL LETTER O",
+    "char": "o"
+  },
+  {
+    "cp": "E0070",
+    "title": "TAG LATIN SMALL LETTER P",
+    "char": "p"
+  },
+  {
+    "cp": "E0071",
+    "title": "TAG LATIN SMALL LETTER Q",
+    "char": "q"
+  },
+  {
+    "cp": "E0072",
+    "title": "TAG LATIN SMALL LETTER R",
+    "char": "r"
+  },
+  {
+    "cp": "E0073",
+    "title": "TAG LATIN SMALL LETTER S",
+    "char": "s"
+  },
+  {
+    "cp": "E0074",
+    "title": "TAG LATIN SMALL LETTER T",
+    "char": "t"
+  },
+  {
+    "cp": "E0075",
+    "title": "TAG LATIN SMALL LETTER U",
+    "char": "u"
+  },
+  {
+    "cp": "E0076",
+    "title": "TAG LATIN SMALL LETTER V",
+    "char": "v"
+  },
+  {
+    "cp": "E0077",
+    "title": "TAG LATIN SMALL LETTER W",
+    "char": "w"
+  },
+  {
+    "cp": "E0078",
+    "title": "TAG LATIN SMALL LETTER X",
+    "char": "x"
+  },
+  {
+    "cp": "E0079",
+    "title": "TAG LATIN SMALL LETTER Y",
+    "char": "y"
+  },
+  {
+    "cp": "E007A",
+    "title": "TAG LATIN SMALL LETTER Z",
+    "char": "z"
+  },
+  {
+    "cp": "E007B",
+    "title": "TAG LEFT CURLY BRACKET",
+    "char": "{"
+  },
+  {
+    "cp": "E007C",
+    "title": "TAG VERTICAL LINE",
+    "char": "|"
+  },
+  {
+    "cp": "E007D",
+    "title": "TAG RIGHT CURLY BRACKET",
+    "char": "}"
+  },
+  {
+    "cp": "E007E",
+    "title": "TAG TILDE",
+    "char": "~"
+  },
+  {
+    "cp": "E007F",
+    "title": "CANCEL TAG",
+    "char": "\0"
+  }
+].map(e=>({...e,num:e.char.codePointAt(0)}))
+
+const encode_ = s => (([...new TextEncoder().encode(s)].map(e=>e==37?[ "E0025", "E0032", "E0035" ]:((chars.find(o=>e==o.num)||{}).cp||["E0025", encode_(e.toString(16).padStart(2,"0"))]))).flat(Infinity))
+const encode = s => encode_(s).map(e=>{
+  return String.fromCodePoint(parseInt(e,16))
+}).join("")
+
+const decode = (s,i) => {
+  let c=[...s].map(e=>e.codePointAt(0).toString(16).toUpperCase()).filter(e=>e!="FE0F")
+  if(i){
+    if(c[0]!=="1F5BC"||c[c.length-1]!="E007F") throw new Error("Not an image!")
+    c.pop()
+    c.shift()
+  }
+  return (i?"data:":"")+decodeURIComponent(c.map(e=>(chars.find(o=>o.cp==e)||(()=>{throw new Error("Invalid codepoint U+"+e)})).char).join(""))
+}
+
+const parseImages = s => {
+  console.log(s)
+  let nodes=[]
+  let lastEnd=0;
+  s.replace(/\ud83d\uddbc\ufe0f?(?:\udb40[\udc20-\udc7e])+\udb40\udc7f/g, (match, index, text)=>{
+    if(index>lastEnd){
+      nodes.push(text.slice(lastEnd, index))
+    }
+    nodes.push(Object.assign(new Image(), {className: "emoji", src: decode(match, true)}))
+    lastEnd=index+match.length
+  })
+  if(lastEnd < s.length-1) {
+    nodes.push(s.slice(lastEnd))
+  }
+  return nodes
+}
+let imageToUnicode=(dataUrl)=>{
+  let u = new URL(dataUrl)
+  if(u.protocol=="data:"&&u.pathname.startsWith("image/"))
+  return `🖼️${encode(dataUrl.slice("data:".length))}`+String.fromCodePoint(0xE007F)
+}
+</script>
+</head>
+<body>
+  <nav style="display: flex;padding:0.5rem;"><a href="#">Decode</a> | <a href="#encode">Encode</a><span style="flex-grow:1"> </span><a href="https://easrng.net">easrng</a></nav>
+  <div id="encode">
+    <div id="pickwrap">
+      <input type="file" accept="image/*" onchange="if(this.files[0]){f=new FileReader();f.onload=()=>emojiout.value=imageToUnicode(f.result);f.onerror=e=>{console.error(e);emojiout.value='Error'};f.readAsDataURL(this.files[0])}" autocomplete="off">
+    </div>
+  <textarea placeholder="Choose a file." readonly autocomplete="off" id="emojiout"></textarea>
+  </div>
+  <div id="decode">
+  <textarea placeholder="Enter some text with custom emojis..." oninput="out.textContent='';out.append(...parseImages(this.value))"></textarea>
+  <div id="out"></div>
+  </div>
+</body>
+</html>
